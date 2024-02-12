@@ -1,0 +1,44 @@
+trigger:
+- none
+
+pool:
+  name: vmsspool2
+
+parameters:
+- name: environment
+  displayName: Where to deploy?
+  type: string
+  values:
+  - sanday-ai-acc
+  - sanday-ai-prd
+variables:
+  location: westeurope
+  resourceGroup: rg-sanday-ai-acc
+  serviceConnection: 'spoke'
+
+stages:
+
+- stage: Preview
+  displayName: Preview
+  jobs:
+  - template: ../devops-templates/preview-bicepparam.yaml
+    parameters:
+      serviceConnection: $(serviceConnection)
+      location: $(location)
+      resourceGroup: $(resourceGroup)
+      parametersFile: $(Build.SourcesDirectory)/deployment/ai-spoke/${{parameters.environment}}.bicepparam
+      overrideParameters: ''
+
+- stage: OpenAISerivces
+  dependsOn: 
+  - Preview
+  displayName: OpenAI for environment ${{ parameters.environment }}
+  jobs:
+  - template: ../devops-templates/deploy-bicepparam.yaml
+    parameters:
+      serviceConnection: $(serviceConnection)
+      location: $(location)
+      resourceGroup: $(resourceGroup)
+      parametersFile: $(Build.SourcesDirectory)/deployment/ai-spoke/${{parameters.environment}}.bicepparam
+      environment: ${{parameters.environment}}
+      overrideParameters: ''
