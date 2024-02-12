@@ -1,4 +1,4 @@
-# Sanday AI Spoke
+# AI Spoke
 
 ## Introduction
 
